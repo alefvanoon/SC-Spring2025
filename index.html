@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Algebra Tools | Scientific Computing Project</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --github: #6e5494;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .tab-btn {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+            border-radius: 30px;
+        }
+        
+        .tab-btn.active {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .tab-btn:hover:not(.active) {
+            background-color: rgba(255,255,255,0.3);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .card.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            color: var(--primary);
+        }
+        
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .matrix-input {
+            background-color: var(--light);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .matrix-input h3 {
+            margin-bottom: 15px;
+            color: var(--secondary);
+        }
+        
+        .matrix-grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .matrix-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .matrix-cell {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .matrix-cell:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+            transform: scale(1.05);
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-ref {
+            background-color: var(--success);
+        }
+        
+        .btn-det {
+            background-color: var(--accent);
+        }
+        
+        .btn-github {
+            background-color: var(--github);
+        }
+        
+        .result-section {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: var(--light);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result-section.active {
+            display: block;
+        }
+        
+        .result-section h3 {
+            margin-bottom: 15px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-section h3 i {
+            color: var(--accent);
+        }
+        
+        .matrix-output {
+            font-family: monospace;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        
+        .det-options {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .option-group label {
+            font-weight: 500;
+        }
+        
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+            margin-top: 20px;
+            opacity: 0.8;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background-color: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        
+        .github-link:hover {
+            background-color: var(--github);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .github-link i {
+            font-size: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .matrix-row {
+                flex-wrap: wrap;
+            }
+        }
+        
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #ffebee;
+            display: none;
+        }
+        
+        .about-section {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .about-section h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .project-info {
+            max-width: 800px;
+            margin: 0 auto;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.6;
+        }
+        
+        .course-badge {
+            background-color: rgba(255,255,255,0.15);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> Linear Algebra Tools</h1>
+            <p>Scientific Computing Project - Matrix Operations with WebAssembly</p>
+            <div class="course-badge">
+                <i class="fas fa-graduation-cap"></i> Scientific Computing Course
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="ref">
+                <i class="fas fa-table"></i> Row Echelon Form
+            </button>
+            <button class="tab-btn" data-tab="det">
+                <i class="fas fa-determinant"></i> Determinant Calculator
+            </button>
+        </div>
+        
+        <!-- REF Calculator Card -->
+        <div class="card active" id="ref-card">
+            <h2><i class="fas fa-project-diagram"></i> Row Echelon Form Calculator</h2>
+            
+            <div class="input-section">
+                <div class="matrix-input">
+                    <h3><i class="fas fa-keyboard"></i> Enter Matrix</h3>
+                    <div class="matrix-controls">
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <label><i class="fas fa-list-ol"></i> Rows: <input type="number" id="ref-rows" min="1" max="6" value="3"></label>
+                            <label><i class="fas fa-list-ol"></i> Columns: <input type="number" id="ref-cols" min="1" max="6" value="3"></label>
+                            <button class="btn" id="ref-generate-btn">
+                                <i class="fas fa-sync-alt"></i> Generate Matrix
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="error" id="ref-error"></div>
+                    
+                    <div class="matrix-grid" id="ref-matrix-container">
+                        <!-- Matrix cells will be generated here -->
+                    </div>
+                    
+                    <button class="btn btn-ref" id="ref-calculate-btn">
+                        <i class="fas fa-cogs"></i> Calculate REF
+                    </button>
+                </div>
+                
+                <div class="info">
+                    <h3><i class="fas fa-info-circle"></i> About Row Echelon Form</h3>
+                    <p>Row Echelon Form (REF) is a matrix form where:</p>
+                    <ul style="margin: 15px 0 15px 20px;">
+                        <li>All nonzero rows are above any rows of all zeros</li>
+                        <li>The leading coefficient of a nonzero row is always to the right of the leading coefficient of the row above it</li>
+                        <li>The leading coefficient is 1 (not strictly required for REF)</li>
+                    </ul>
+                    <p>This calculator uses Gaussian elimination to transform your matrix into REF.</p>
+                    <div style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4><i class="fas fa-lightbulb"></i> Example Matrix:</h4>
+                        <pre style="background: white; padding: 10px; border-radius: 4px;">
+1  2  3
+4  5  6
+7  8  9</pre>
+                        <p>Try this matrix to see the REF transformation</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section" id="ref-result">
+                <h3><i class="fas fa-poll"></i> Result: Row Echelon Form</h3>
+                <div class="matrix-output" id="ref-output"></div>
+            </div>
+        </div>
+        
+        <!-- Determinant Calculator Card -->
+        <div class="card" id="det-card">
+            <h2><i class="fas fa-superscript"></i> Determinant Calculator</h2>
+            
+            <div class="input-section">
+                <div class="matrix-input">
+                    <h3><i class="fas fa-keyboard"></i> Enter Square Matrix</h3>
+                    <div class="matrix-controls">
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <label><i class="fas fa-ruler-combined"></i> Size: <input type="number" id="det-size" min="1" max="6" value="3"></label>
+                            <button class="btn" id="det-generate-btn">
+                                <i class="fas fa-sync-alt"></i> Generate Matrix
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="error" id="det-error"></div>
+                    
+                    <div class="matrix-grid" id="det-matrix-container">
+                        <!-- Matrix cells will be generated here -->
+                    </div>
+                    
+                    <button class="btn btn-det" id="det-calculate-btn">
+                        <i class="fas fa-cogs"></i> Calculate Determinant
+                    </button>
+                </div>
+                
+                <div class="info">
+                    <h3><i class="fas fa-info-circle"></i> About Matrix Determinant</h3>
+                    <p>The determinant is a scalar value that can be computed from a square matrix and has several important properties:</p>
+                    <ul style="margin: 15px 0 15px 20px;">
+                        <li>Determines if a matrix is invertible</li>
+                        <li>Represents the scaling factor of linear transformations</li>
+                        <li>Can be computed using cofactor expansion or other methods</li>
+                    </ul>
+                    <p>This calculator uses an efficient method to compute the determinant.</p>
+                    <div style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4><i class="fas fa-lightbulb"></i> Example Matrix:</h4>
+                        <pre style="background: white; padding: 10px; border-radius: 4px;">
+1  2  3
+4  5  6
+7  8  9</pre>
+                        <p>Determinant = 0 (singular matrix)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section" id="det-result">
+                <h3><i class="fas fa-poll"></i> Determinant Result</h3>
+                <div class="matrix-output" id="det-output"></div>
+            </div>
+        </div>
+        
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Processing with Python WebAssembly...</p>
+        </div>
+        
+        <div class="about-section">
+            <h3><i class="fas fa-user-graduate"></i> About This Project</h3>
+            <div class="project-info">
+                <p>This project was developed as part of the Scientific Computing course to demonstrate linear algebra operations using WebAssembly. The application runs entirely in the browser with no server required.</p>
+                <p>It implements Gaussian elimination for Row Echelon Form and uses NumPy for determinant calculation via Pyodide (Python in WebAssembly).</p>
+            </div>
+            <a href="https://github.com/alefvanoon/SC-Spring2025" class="github-link" target="_blank">
+                <i class="fab fa-github"></i> View on GitHub
+            </a>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-content">
+                <p>Linear Algebra Tools - Scientific Computing Project</p>
+                <p><i class="far fa-copyright"></i> 2025 | Developed for Scientific Computing Course</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Pyodide
+        let pyodide;
+        let pyodideReady = false;
+        
+        async function initializePyodide() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            
+            try {
+                // Display status message
+                loader.innerHTML = `
+                    <div class="spinner"></div>
+                    <p>Loading Python runtime (this may take a minute)...</p>
+                    <p>Download size: ~7MB</p>
+                `;
+                
+                pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/"
+                });
+                
+                // Load numpy for matrix operations
+                loader.innerHTML = `
+                    <div class="spinner"></div>
+                    <p>Loading NumPy package...</p>
+                `;
+                await pyodide.loadPackage("numpy");
+                
+                // Load our Python functions
+                loader.innerHTML = `
+                    <div class="spinner"></div>
+                    <p>Loading linear algebra functions...</p>
+                `;
+                
+                await pyodide.runPython(`
+                import numpy as np
+                from numpy.linalg import det
+
+                def ref(matrix):
+                    mat = np.array(matrix, dtype=float)
+                    rows, cols = mat.shape
+                    r = 0
+                    tolerance = 1e-10
+                    
+                    for c in range(cols):
+                        if r >= rows:
+                            break
+                            
+                        # Find the pivot row
+                        pivot_row = r
+                        for i in range(r, rows):
+                            if abs(mat[i, c]) > tolerance:
+                                pivot_row = i
+                                break
+                        
+                        if abs(mat[pivot_row, c]) < tolerance:
+                            continue
+                            
+                        # Swap pivot row with current row
+                        if pivot_row != r:
+                            mat[[r, pivot_row]] = mat[[pivot_row, r]]
+                        
+                        # Eliminate below
+                        for i in range(r+1, rows):
+                            factor = mat[i, c] / mat[r, c]
+                            mat[i] = mat[i] - factor * mat[r]
+                            
+                        r += 1
+                    
+                    # Convert small numbers to 0 for cleaner output
+                    mat = np.where(np.abs(mat) < tolerance, 0, mat)
+                    return mat.tolist()
+                `);
+                
+                pyodideReady = true;
+                loader.style.display = 'none';
+                console.log("Pyodide initialized successfully!");
+                enableUI();
+                
+                // Generate matrices with example values
+                generateMatrix('ref-matrix-container', 3, 3, [[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+                generateMatrix('det-matrix-container', 3, 3, [[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+                
+            } catch (error) {
+                console.error("Error initializing Pyodide:", error);
+                loader.innerHTML = `
+                    <p style="color: #e74c3c;">Error loading Pyodide: ${error.message}</p>
+                    <p>Please check your internet connection and refresh the page.</p>
+                `;
+            }
+        }
+
+        function enableUI() {
+            document.getElementById('ref-generate-btn').disabled = false;
+            document.getElementById('det-generate-btn').disabled = false;
+            document.getElementById('ref-calculate-btn').disabled = false;
+            document.getElementById('det-calculate-btn').disabled = false;
+        }
+
+        function showError(section, message) {
+            const errorEl = document.getElementById(`${section}-error`);
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Matrix generation functions
+        function generateMatrix(containerId, rows, cols, initialValues = null) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            for (let i = 0; i < rows; i++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'matrix-row';
+                
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'matrix-cell';
+                    
+                    // Set initial value if provided
+                    if (initialValues && initialValues[i] && initialValues[i][j] !== undefined) {
+                        input.value = initialValues[i][j];
+                    } else {
+                        input.value = i === j ? '1' : '0';
+                    }
+                    
+                    input.dataset.row = i;
+                    input.dataset.col = j;
+                    rowDiv.appendChild(input);
+                }
+                
+                container.appendChild(rowDiv);
+            }
+        }
+
+        function getMatrixValues(containerId) {
+            const container = document.getElementById(containerId);
+            const inputs = container.querySelectorAll('.matrix-cell');
+            const rows = new Set();
+            const cols = new Set();
+            const matrix = [];
+            
+            for (let i = 0; i < inputs.length; i++) {
+                const input = inputs[i];
+                const row = parseInt(input.dataset.row);
+                const col = parseInt(input.dataset.col);
+                let value = input.value.trim();
+                
+                // Handle empty inputs
+                if (value === '') {
+                    value = '0';
+                    input.value = '0';
+                }
+                
+                // Validate input
+                if (isNaN(parseFloat(value))) {
+                    showError(containerId.split('-')[0], `Invalid number at row ${row+1}, column ${col+1}`);
+                    return null;
+                }
+                
+                const numValue = parseFloat(value);
+                
+                rows.add(row);
+                cols.add(col);
+                
+                if (!matrix[row]) matrix[row] = [];
+                matrix[row][col] = numValue;
+            }
+            
+            // Ensure matrix is rectangular
+            const rowCount = Math.max(...rows) + 1;
+            const colCount = Math.max(...cols) + 1;
+            
+            for (let i = 0; i < rowCount; i++) {
+                if (!matrix[i]) matrix[i] = [];
+                for (let j = 0; j < colCount; j++) {
+                    if (matrix[i][j] === undefined) matrix[i][j] = 0;
+                }
+            }
+            
+            return matrix;
+        }
+
+        function formatMatrix(matrix) {
+            return matrix.map(row => 
+                row.map(val => {
+                    if (Math.abs(val) < 0.000001) {
+                        return '0';
+                    }
+                    // Format to 4 decimal places but remove trailing zeros
+                    const fixed = val.toFixed(4);
+                    if (fixed.endsWith('.0000')) {
+                        return parseInt(val).toString();
+                    }
+                    return fixed.replace(/\.?0+$/, '');
+                }).join('\t')
+            ).join('\n');
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                
+                // Show active card
+                const tab = button.dataset.tab;
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                document.getElementById(`${tab}-card`).classList.add('active');
+            });
+        });
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Pyodide
+            initializePyodide();
+            
+            // Disable buttons until Pyodide is ready
+            document.getElementById('ref-generate-btn').disabled = true;
+            document.getElementById('det-generate-btn').disabled = true;
+            document.getElementById('ref-calculate-btn').disabled = true;
+            document.getElementById('det-calculate-btn').disabled = true;
+            
+            // REF matrix generation
+            document.getElementById('ref-generate-btn').addEventListener('click', () => {
+                const rows = parseInt(document.getElementById('ref-rows').value) || 3;
+                const cols = parseInt(document.getElementById('ref-cols').value) || 3;
+                generateMatrix('ref-matrix-container', rows, cols);
+                document.getElementById('ref-result').classList.remove('active');
+            });
+            
+            // Determinant matrix generation
+            document.getElementById('det-generate-btn').addEventListener('click', () => {
+                const size = parseInt(document.getElementById('det-size').value) || 3;
+                generateMatrix('det-matrix-container', size, size);
+                document.getElementById('det-result').classList.remove('active');
+            });
+            
+            // Calculate REF
+            document.getElementById('ref-calculate-btn').addEventListener('click', async () => {
+                if (!pyodideReady) {
+                    showError('ref', "Python runtime is still initializing. Please wait...");
+                    return;
+                }
+                
+                const matrix = getMatrixValues('ref-matrix-container');
+                if (!matrix) return;
+                
+                const loader = document.getElementById('loader');
+                loader.style.display = 'block';
+                
+                try {
+                    const refMatrix = await pyodide.runPython(`
+                        ref(${JSON.stringify(matrix)})
+                    `);
+                    
+                    document.getElementById('ref-output').textContent = formatMatrix(refMatrix);
+                    document.getElementById('ref-result').classList.add('active');
+                } catch (error) {
+                    console.error("Error calculating REF:", error);
+                    showError('ref', "Error calculating REF: " + error.message);
+                }
+                
+                loader.style.display = 'none';
+            });
+            
+            // Calculate Determinant
+            document.getElementById('det-calculate-btn').addEventListener('click', async () => {
+                if (!pyodideReady) {
+                    showError('det', "Python runtime is still initializing. Please wait...");
+                    return;
+                }
+                
+                const matrix = getMatrixValues('det-matrix-container');
+                if (!matrix) return;
+                
+                const loader = document.getElementById('loader');
+                loader.style.display = 'block';
+                
+                try {
+                    // Use numpy's determinant function for accuracy
+                    const det = await pyodide.runPython(`
+                        import numpy as np
+                        matrix = np.array(${JSON.stringify(matrix)})
+                        np.linalg.det(matrix)
+                    `);
+                    
+                    const detValue = det.toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 6
+                    });
+                    
+                    document.getElementById('det-output').textContent = `Determinant = ${detValue}`;
+                    document.getElementById('det-result').classList.add('active');
+                } catch (error) {
+                    console.error("Error calculating determinant:", error);
+                    showError('det', "Error calculating determinant: " + error.message);
+                }
+                
+                loader.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
