@@ -20,7 +20,7 @@ A web-based application for performing fundamental linear algebra operations, bu
 ## Live Demo
 
 The application is hosted on GitHub Pages:  
-[View Live Demo](https://alefvanoon.github.io/SC-Soring2025)
+[View Live Demo](https://alefvanoon.github.io/SC-Spring2025/)
 
 ## Technologies Used
 
